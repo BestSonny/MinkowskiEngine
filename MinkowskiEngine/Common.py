@@ -71,8 +71,6 @@ def prep_args(tensor_stride, stride, kernel_size, dilation, region_type, D=-1):
         kernel_size > 0
     ), f"kernel_size must be a positive integer, provided {kernel_size}"
     assert D > 0, f"dimension must be a positive integer, {D}"
-    assert isinstance(region_type,
-                      RegionType), "region offset must be of type RegionType"
     tensor_stride = convert_to_int_tensor(tensor_stride, D)
     stride = convert_to_int_tensor(stride, D)
     kernel_size = convert_to_int_tensor(kernel_size, D)
@@ -145,7 +143,7 @@ def get_kernel_volume(region_type, kernel_size, region_offset, axis_types,
             kernel_size %
             2).prod() == 1, "kernel_size must be odd for region_type HYPERCROSS"
         # 0th: itself, (1, 2) for 0th dim neighbors, (3, 4) for 1th dim ...
-        kernel_volume = int(torch.sum(kernel_size - 1) * dimension + 1)
+        kernel_volume = int(torch.sum(kernel_size - 1) + 1)
 
     elif region_type == RegionType.HYBRID:
         assert region_offset is None, \
@@ -224,7 +222,7 @@ def convert_region_type(region_type,
             kernel_size %
             2).prod() == 1, "kernel_size must be odd for region_type HYPERCROSS"
         # 0th: itself, (1, 2) for 0th dim neighbors, (3, 4) for 1th dim ...
-        kernel_volume = int(torch.sum(kernel_size - 1) * dimension + 1)
+        kernel_volume = int(torch.sum(kernel_size - 1) + 1)
 
     elif region_type == RegionType.HYBRID:
         assert region_offset is None, \
