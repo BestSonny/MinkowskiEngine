@@ -1,5 +1,13 @@
 # Change Log
 
+## [nightly] - 2019-12-10
+
+### Changed
+
+- Cache in-out mapping on device
+- Latest TBB installation instruction update and GCC requirement
+
+
 ## [0.3.0] - 2019-12-08
 
 ### Changed
