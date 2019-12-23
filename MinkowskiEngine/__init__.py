@@ -21,7 +21,7 @@
 # Please cite "4D Spatio-Temporal ConvNets: Minkowski Convolutional Neural
 # Networks", CVPR'19 (https://arxiv.org/abs/1904.08755) if you use any part
 # of the code.
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 
 import os
 import sys
@@ -57,11 +57,12 @@ from MinkowskiNonlinearity import MinkowskiReLU, MinkowskiSigmoid, MinkowskiSoft
     MinkowskiPReLU, MinkowskiELU, MinkowskiSELU, MinkowskiCELU, MinkowskiDropout, \
     MinkowskiThreshold, MinkowskiTanh
 
-
-from MinkowskiNormalization import MinkowskiBatchNorm, MinkowskiInstanceNorm, \
-    MinkowskiInstanceNormFunction, MinkowskiStableInstanceNorm
+from MinkowskiNormalization import MinkowskiBatchNorm, MinkowskiSyncBatchNorm, \
+    MinkowskiInstanceNorm, MinkowskiInstanceNormFunction, MinkowskiStableInstanceNorm
 
 from MinkowskiPruning import MinkowskiPruning, MinkowskiPruningFunction
+
+from MinkowskiUnion import MinkowskiUnion, MinkowskiUnionFunction
 
 from MinkowskiNetwork import MinkowskiNetwork
 

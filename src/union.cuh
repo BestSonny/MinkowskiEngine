@@ -22,33 +22,24 @@
  *  Networks", CVPR'19 (https://arxiv.org/abs/1904.08755) if you use any part
  *  of the code.
  */
-#ifndef BROADCAST_CUH
-#define BROADCAST_CUH
+#ifndef GPU_PRUNING
+#define GPU_PRUNING
 
 #include <array>
-#include <cusparse_v2.h>
 #include <vector>
 
-#include "gpu.cuh"
-#include "gpu_memory_manager.hpp"
-#include "math_functions.hpp"
 #include "types.hpp"
 
 template <typename Dtype, typename Itype>
-void BroadcastForwardKernelGPU(const Dtype *d_in_feat, int in_nrows,
-                               const Dtype *d_in_feat_global,
-                               int in_nrows_global, Dtype *d_out_feat,
-                               int nchannel, int op,
-                               const pInOutMaps<Itype> &d_in_map,
-                               const pInOutMaps<Itype> &d_out_map,
-                               cusparseHandle_t cushandle, cudaStream_t stream);
+void UnionForwardKernelGPU(const vector<Dtype *> d_in_feats, Dtype *d_out_feat,
+                           int nchannel, const pInOutMaps<Itype> &in_maps,
+                           const pInOutMaps<Itype> &out_maps,
+                           cudaStream_t stream);
 
 template <typename Dtype, typename Itype>
-void BroadcastBackwardKernelGPU(
-    const Dtype *d_in_feat, Dtype *d_grad_in_feat, int in_nrows,
-    const Dtype *d_in_feat_global, Dtype *d_grad_in_feat_global,
-    int in_nrows_global, const Dtype *d_grad_out_feat, int nchannel, int op,
-    const pInOutMaps<Itype> &d_in_map, const pInOutMaps<Itype> &d_out_map,
-    cusparseHandle_t cushandle, cudaStream_t stream);
-
+void UnionBackwardKernelGPU(vector<Dtype *> d_grad_in_feats,
+                            const Dtype *d_grad_out_feat, int nchannel,
+                            const pInOutMaps<Itype> &in_maps,
+                            const pInOutMaps<Itype> &out_maps,
+                            cudaStream_t stream);
 #endif

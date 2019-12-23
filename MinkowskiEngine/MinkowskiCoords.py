@@ -21,18 +21,26 @@
 # Please cite "4D Spatio-Temporal ConvNets: Minkowski Convolutional Neural
 # Networks", CVPR'19 (https://arxiv.org/abs/1904.08755) if you use any part
 # of the code.
+import os
 import numpy as np
 import torch
 from Common import convert_to_int_list, convert_to_int_tensor, prep_args
 import MinkowskiEngineBackend as MEB
+
+CPU_COUNT = os.cpu_count()
+if 'OMP_NUM_THREADS' in os.environ:
+    CPU_COUNT = int(os.environ['OMP_NUM_THREADS'])
 
 
 class CoordsKey():
 
     def __init__(self, D):
         self.D = D
-        self.CPPCoordsKey = getattr(MEB, f'CoordsKey')()
+        self.CPPCoordsKey = MEB.CoordsKey()
         self.CPPCoordsKey.setDimension(D)
+
+    def isKeySet(self):
+        return self.CPPCoordsKey.isKeySet()
 
     def setKey(self, key):
         self.CPPCoordsKey.setKey(key)
@@ -53,12 +61,14 @@ class CoordsKey():
 
 class CoordsManager():
 
-    def __init__(self, D=-1):
+    def __init__(self, num_threads=-1, D=-1):
         if D < 1:
             raise ValueError(f"Invalid dimension {D}")
         self.D = D
-        CPPCoordsManager = getattr(MEB, f'CoordsManager')
-        coords_man = CPPCoordsManager()
+        CPPCoordsManager = MEB.CoordsManager
+        if num_threads < 0:
+            num_threads = CPU_COUNT
+        coords_man = CPPCoordsManager(num_threads)
         self.CPPCoordsManager = coords_man
 
     def initialize(self,

@@ -27,12 +27,13 @@
 
 #include <array>
 #include <iostream>
+#include <omp.h>
 #include <string>
 #include <vector>
 
 #include <torch/extension.h>
 
-#include "concurrent_coordsmap.hpp"
+#include "robin_coordsmap.hpp"
 #include "types.hpp"
 #include "utils.hpp"
 
@@ -73,7 +74,7 @@ inline vector<int> computeOutTensorStride(const vector<int> &tensor_strides,
   ASSERT(tensor_strides.size() == strides.size(),
          "The dimension of tensor_stride: ", ArrToString(tensor_strides),
          " does not match the dimension of strides: ", ArrToString(strides));
-  for (int i = 0; i < strides.size(); i++) {
+  for (size_t i = 0; i < strides.size(); i++) {
     if (is_transpose) {
       ASSERT(tensor_strides[i] % strides[i] == 0,
              "The output tensor stride is not divisible by ",
@@ -91,7 +92,7 @@ public:
   // Variables
   //
   // Coordinate hash key to coordinate hash map
-  unordered_map<uint64_t, ConcurrentCoordsMap> coords_maps;
+  unordered_map<uint64_t, CoordsMap> coords_maps;
   set<int> batch_indices;
 
   // In to out index mapping for each kernel, pooling
@@ -99,22 +100,26 @@ public:
   unordered_map<InOutMapKey, InOutMaps<int>, InOutMapKeyHash> out_maps;
 
   CoordsManager(){};
+  CoordsManager(int num_threads) {
+    omp_set_dynamic(0);
+    omp_set_num_threads(num_threads);
+  }
   ~CoordsManager() { clear(); }
 
-  void printDiagnostics(py::object py_coords_key);
+  void printDiagnostics(py::object py_coords_key) const;
 
-  bool existsCoordsKey(uint64_t coords_key);
-  bool existsCoordsKey(py::object py_coords_key);
-  int getCoordsSize(uint64_t coords_key);
-  int getCoordsSize(py::object py_coords_key);
-  uint64_t getCoordsKey(const vector<int> &tensor_strides);
+  bool existsCoordsKey(uint64_t coords_key) const;
+  bool existsCoordsKey(py::object py_coords_key) const;
+  int getCoordsSize(uint64_t coords_key) const;
+  int getCoordsSize(py::object py_coords_key) const;
+  uint64_t getCoordsKey(const vector<int> &tensor_strides) const;
 
-  void getCoords(at::Tensor coords, py::object py_coords_key);
+  void getCoords(at::Tensor coords, py::object py_coords_key) const;
   void getKernelMap(at::Tensor kernel_map, vector<int> tensor_strides,
                     vector<int> strides, vector<int> kernel_sizes,
                     vector<int> dilations, int region_type,
                     py::object py_in_coords_key, py::object py_out_coords_key,
-                    bool is_transpose, bool is_pool);
+                    bool is_transpose, bool is_pool) const;
 
   // New coords map initialzation entry
   uint64_t initializeCoords(at::Tensor coords, at::Tensor mapping,
@@ -138,6 +143,8 @@ public:
   uint64_t createPrunedCoords(at::Tensor use_feat, py::object py_in_coords_key,
                               py::object py_out_coords_key);
   uint64_t createOriginCoords(int D);
+  uint64_t createUnionCoords(vector<py::object> py_in_coords_keys,
+                             py::object py_out_coords_key);
 
   // Mappings
   const InOutMapKey getMapHashKey(vector<int> tensor_strides,
@@ -148,6 +155,8 @@ public:
                                   bool is_transpose, bool is_pool) const;
   const InOutMapKey getOriginMapHashKey(py::object py_in_coords_key,
                                         py::object py_out_coords_key) const;
+  const InOutMapKey getUnionMapHashKey(vector<py::object> py_in_coords_keys,
+                                       py::object py_out_coords_key) const;
 
   // Wrapper functions for setting up coords and returning maps
   const InOutMapsRefPair<int>
@@ -164,6 +173,10 @@ public:
   const InOutMapsRefPair<int> getPruningInOutMaps(at::Tensor use_feat,
                                                   py::object py_in_coords_key,
                                                   py::object py_out_coords_key);
+
+  const InOutMapsRefPair<int>
+  getUnionInOutMaps(vector<py::object> py_in_coords_keys,
+                    py::object py_out_coords_key);
 
   int getMapSize(const InOutMaps<int> &in_maps) {
     int n = 0;
@@ -224,10 +237,15 @@ public:
   getPruningInOutMapsGPU(at::Tensor use_feat, py::object py_in_coords_key,
                          py::object py_out_coords_key);
 
-  void *getScratchGPUMemory(int size) { return gpu_memory_manager.data(size); }
-  void *getScratchGPUMemory2(int size) {
-    return gpu_memory_manager.data2(size);
+  const pInOutMapsRefPair<int>
+  getUnionInOutMapsGPU(vector<py::object> py_in_coords_keys,
+                       py::object py_out_coords_key);
+
+  void *getScratchGPUMemory(size_t size) {
+    return gpu_memory_manager.tmp_data(size);
   }
+
+  void clearScratchGPUMemory() { gpu_memory_manager.clear_tmp(); }
 
 #endif // CPU_ONLY
 };

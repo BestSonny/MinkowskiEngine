@@ -11,7 +11,7 @@ Table of Contents
    :caption: Intro Documentation
 
    overview
-   generalized_sparse_conv
+   convolution_on_sparse
    quick_start
 
 .. toctree::
@@ -35,9 +35,12 @@ Table of Contents
    broadcast
    normalization
    nonlinearity
+   pruning
+   union
    coords
    utils
    common
+   misc
 
 .. toctree::
    :maxdepth: 1

@@ -5,10 +5,9 @@ The Minkowski Engine is an auto-differentiation library for sparse tensors. It s
 ## Features
 
 - Unlimited high-dimensional sparse tensor support
+- All standard neural network layers (Convolution, Pooling, Broadcast, etc.)
 - Dynamic computation graph
 - Custom kernel shapes
-- [Generalized sparse convolution](https://stanfordvl.github.io/MinkowskiEngine/generalized_sparse_conv.html)
-- Dilated convolution
 - Multi-GPU training
 - Multi-threaded kernel map
 - Multi-threaded compilation
@@ -25,7 +24,7 @@ The Minkowski Engine is an auto-differentiation library for sparse tensors. It s
 
 ## Installation
 
-You can install the MinkowskiEngine without sudo using anaconda. Using anaconda is highly recommended.
+You can install the Minkowski Engine without sudo using anaconda. Using anaconda is highly recommended.
 
 
 ### Anaconda
@@ -40,7 +39,7 @@ First, follow [the anaconda documentation](https://docs.anaconda.com/anaconda/in
 ```
 conda create -n py3-mink python=3.7
 conda activate py3-mink
-conda install openblas numpy tbb=2019.9 tbb-devel=2019.9 -c conda-forge
+conda install openblas numpy
 conda install pytorch torchvision -c pytorch
 ```
 
@@ -56,13 +55,10 @@ python setup.py install
 
 ### Python virtual environment
 
-Like the anaconda installation, make sure that you install pytorch with the the same CUDA version that `nvcc` uses.
+Like the anaconda installation, make sure that you install pytorch with the same CUDA version that `nvcc` uses.
 
 ```
-# Latest TBB
-echo "deb http://cz.archive.ubuntu.com/ubuntu eoan main universe" | sudo tee -a  /etc/apt/sources.list
-sudo apt update
-sudo apt install libopenblas-dev libtbb-dev
+sudo apt install libopenblas-dev
 
 # within a python3 environment
 pip install torch
@@ -177,8 +173,6 @@ page](https://github.com/StanfordVL/MinkowskiEngine/issues).
 ```
 
 ## Projects using MinkowskiEngine
-
-Feel free to send me your project link to ![](https://node1.chrischoy.org/data/email.png).
 
 - [4D Spatio-Temporal Segmentation](https://github.com/chrischoy/SpatioTemporalSegmentation)
 - [Fully Convolutional Geometric Features, ICCV'19](https://github.com/chrischoy/FCGF)
